@@ -1,6 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 export default function TopNav({ selectedCompany = 'Apple Inc.', onCompanyChange }) {
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  const companies = [
+    'Apple Inc.', 'Microsoft Corp.', 'NVIDIA Corp.', 'Meta Platforms',
+    'Amazon.com Inc.', 'Tesla Inc.', 'Google (Alphabet)', 'Netflix Inc.'
+  ];
+  
+  const filteredCompanies = companies.filter(c => 
+    c.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  
   return (
     <nav className="top-nav">
       <div className="top-nav-left">
@@ -9,20 +20,25 @@ export default function TopNav({ selectedCompany = 'Apple Inc.', onCompanyChange
 
       <div className="top-nav-center">
         <div className="nav-control-group">
-          <label className="nav-label">Company</label>
+          <label className="nav-label">Search Company</label>
+          <input
+            type="text"
+            placeholder="Type to search..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="nav-search"
+          />
+        </div>
+        <div className="nav-control-group">
+          <label className="nav-label">Select</label>
           <select
             value={selectedCompany}
             onChange={(e) => onCompanyChange && onCompanyChange(e.target.value)}
             className="nav-select"
           >
-            <option>Apple Inc.</option>
-            <option>Microsoft Corp.</option>
-            <option>NVIDIA Corp.</option>
-            <option>Meta Platforms</option>
-            <option>Amazon.com Inc.</option>
-            <option>Tesla Inc.</option>
-            <option>Google (Alphabet)</option>
-            <option>Netflix Inc.</option>
+            {filteredCompanies.map(company => (
+              <option key={company}>{company}</option>
+            ))}
           </select>
         </div>
       </div>

@@ -5,6 +5,10 @@ import KPICardEnhanced from '../components/KPICardEnhanced';
 import MainChart from '../components/MainChart';
 import RightPanel from '../components/RightPanel';
 import ModelInterpretation from '../components/ModelInterpretation';
+import RecentActivity from '../components/RecentActivity';
+import FeatureImportance from '../components/FeatureImportance';
+import LiveDataPanel from '../components/LiveDataPanel';
+import Toast from '../components/Toast';
 // import InputForm from '../components/InputForm';
 import AssetLiabilityChart from '../components/AssetLiabilityChart';
 import RiskComparisonChart from '../components/RiskComparisonChart';
@@ -12,6 +16,7 @@ import Companies from './Companies';
 import Predictions from './Predictions';
 import Sentiment from './Sentiment';
 import Footer from '../components/Footer';
+import { exportDashboardToPDF, exportHistoryToCSV } from '../utils/exportUtils';
 
 const COMPANY_TO_TICKER = {
   'Apple Inc.': 'AAPL',
@@ -51,13 +56,29 @@ export default function Dashboard() {
   const [prefill, setPrefill] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  
+  // SHAP explainability state
+  const [shapData, setShapData] = useState(null);
+  const [shapLoading, setShapLoading] = useState(false);
+  
+  // Live data state
+  const [liveData, setLiveData] = useState(null);
+  
+  // Toast notification state
+  const [toast, setToast] = useState(null);
 
   const fetchPrediction = useCallback(async (payload = {}) => {
     setLoading(true);
     setError(null);
     try {
+      // If no payload provided, try to use prefill or fetch a sample for the company
+      let dataToUse = payload;
+      if (Object.keys(payload).length === 0 && Object.keys(prefill).length > 0) {
+        dataToUse = prefill;
+      }
+      
       // Add company info to payload
-      const payloadWithCompany = { ...payload, company: selectedCompany };
+      const payloadWithCompany = { ...dataToUse, company: selectedCompany };
       
       const res = await fetch('/predict', {
         method: 'POST',
@@ -83,14 +104,119 @@ export default function Dashboard() {
       setFdi(fdiVal ?? null);
       setRisk(riskVal ?? null);
       setConfidence(confVal ?? null);
+      
+      // Update prefill with the payload used
+      setPrefill(payloadWithCompany);
+      
     } catch (err) {
       setError(err.message || 'Failed to fetch');
+      setToast({
+        message: `⚠️ Error: ${err.message}`,
+        type: 'error'
+      });
     } finally {
       setLoading(false);
     }
-  }, [selectedCompany]);
+  }, [selectedCompany, prefill]);
 
-  // When company changes, fetch its latest prediction from history
+  // Fetch SHAP explanation for current prediction
+  const fetchExplanation = useCallback(async () => {
+    if (Object.keys(prefill).length === 0) {
+      setToast({
+        message: '⚠️ Please select a sample from the dropdown below, then click "Predict & Explain"',
+        type: 'info'
+      });
+      return;
+    }
+    
+    setShapLoading(true);
+    try {
+      const payload = { ...prefill, company: selectedCompany };
+      console.log('Fetching SHAP explanation with payload:', payload);
+      
+      const res = await fetch('/explain', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        console.warn('SHAP request failed:', res.status, data);
+        
+        let errorMsg = 'SHAP explanation not available.';
+        if (res.status === 503) {
+          errorMsg = '⚠️ SHAP is not installed on the backend. Contact admin.';
+        } else if (data.message) {
+          errorMsg = `⚠️ ${data.message}`;
+        } else if (data.error) {
+          errorMsg = `⚠️ ${data.error}`;
+        }
+        
+        setToast({
+          message: errorMsg,
+          type: 'error'
+        });
+        setShapData(null);
+        return;
+      }
+
+      const data = await res.json();
+      console.log('SHAP data received:', data);
+      setShapData(data);
+      
+      setToast({
+        message: '✅ Feature importance analysis complete! Scroll down to view.',
+        type: 'success'
+      });
+      
+      // Auto-scroll to SHAP section after a short delay
+      setTimeout(() => {
+        const shapSection = document.querySelector('.feature-importance-card');
+        if (shapSection) {
+          shapSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 500);
+    } catch (err) {
+      console.error('Failed to fetch explanation:', err);
+      setToast({
+        message: `⚠️ Failed to get explanation: ${err.message}`,
+        type: 'error'
+      });
+      setShapData(null);
+    } finally {
+      setShapLoading(false);
+    }
+  }, [prefill, selectedCompany]);
+
+  // Handle live data fetched
+  const handleLiveDataFetched = useCallback((data) => {
+    setLiveData(data);
+    console.log('Live data fetched:', data);
+  }, []);
+
+  // Handle using live data for prediction
+  const handleUseLiveData = useCallback(async (features) => {
+    // Merge live features into existing prefill so we keep any required fields the model expects
+    const merged = {
+      ...prefill,
+      ...features,
+      ticker: COMPANY_TO_TICKER[selectedCompany] || features.ticker,
+      company: selectedCompany,
+    };
+
+    setPrefill(merged);
+
+    // Auto-trigger prediction with merged payload
+    await fetchPrediction(merged);
+
+    setToast({
+      message: '✅ Live data loaded! Prediction and SHAP will use real-time metrics.',
+      type: 'success'
+    });
+  }, [fetchPrediction, prefill, selectedCompany]);
+
+  // When company changes, fetch its latest prediction from history and sample data
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -113,23 +239,83 @@ export default function Dashboard() {
               setFdi(pred.fdi);
               setRisk(pred.risk);
               setConfidence(pred.confidence);
+              // Load the payload to prefill for this company
+              if (pred.payload) {
+                setPrefill(pred.payload);
+              }
             }
             return;
           }
         }
         
-        // If no history found, fetch a default prediction
-        if (mounted && history.length > 0) {
-          const latest = history[0];
-          setFdi(latest.fdi);
-          setRisk(latest.risk);
-          setConfidence(latest.confidence);
+        // If no history found, try to load a sample for this company
+        const samplesRes = await fetch('/samples?limit=50');
+        if (!samplesRes.ok) return;
+        const samplesData = await samplesRes.json();
+        const companySamples = samplesData.samples || [];
+        
+        // Find a sample matching the company
+        const ticker = COMPANY_TO_TICKER[selectedCompany];
+        console.log(`Looking for sample with ticker ${ticker} for company ${selectedCompany}`);
+        const matchingSample = companySamples.find(s => s.ticker === ticker);
+        
+        if (matchingSample && mounted) {
+          console.log(`Found matching sample:`, matchingSample);
+          // Load this sample
+          const preprocessRes = await fetch('/preprocess', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sample_id: matchingSample.id })
+          });
+          if (preprocessRes.ok) {
+            const preprocessData = await preprocessRes.json();
+            if (preprocessData.features) {
+              setPrefill(preprocessData.features);
+              setSelectedSample(String(matchingSample.id));
+            }
+          }
         }
+        
       } catch (err) {
         // ignore
       }
+    })();    
+    // Auto-load a matching sample for the selected company
+    (async () => {
+      try {
+        const res = await fetch('/samples?limit=100');
+        if (!res.ok) return;
+        const data = await res.json();
+        const samples = data.samples || [];
+        
+        // Extract ticker from company name (e.g., "Apple Inc." -> "AAPL")
+        const companyTicker = selectedCompany.split(' ')[0].toUpperCase();
+        const tickerMap = {
+          'APPLE': 'AAPL',
+          'MICROSOFT': 'MSFT',
+          'AMAZON.COM': 'AMZN',
+          'GOOGLE': 'GOOGL',
+          'TESLA': 'TSLA',
+          'NETFLIX': 'NFLX',
+          'META': 'META',
+          'NVIDIA': 'NVDA'
+        };
+        
+        const ticker = tickerMap[companyTicker] || companyTicker;
+        
+        // Find first matching sample by ticker
+        const matchingSample = samples.find(s => s.ticker === ticker);
+        
+        if (matchingSample && mounted) {
+          setPrefill(matchingSample.payload || {});
+          setSelectedSample(matchingSample.id);
+          console.log(`Auto-loaded sample for ${selectedCompany}:`, matchingSample.id);
+        }
+      } catch (err) {
+        console.error('Failed to auto-load sample:', err);
+      }
     })();
-    return () => (mounted = false);
+        return () => (mounted = false);
   }, [selectedCompany]);
 
   // fetch feature schema so we can render a dynamic form
@@ -286,6 +472,54 @@ export default function Dashboard() {
 
         <main className="main-content-layout">
           <section className="main-section">
+            {/* Export Actions */}
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '16px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => exportDashboardToPDF(selectedCompany, fdi, risk, confidence)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  background: 'linear-gradient(135deg, rgba(93, 228, 199, 0.15), rgba(93, 228, 199, 0.08))',
+                  border: '1px solid rgba(93, 228, 199, 0.3)',
+                  color: '#5de4c7',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => e.target.style.background = 'linear-gradient(135deg, rgba(93, 228, 199, 0.25), rgba(93, 228, 199, 0.15))'}
+                onMouseOut={(e) => e.target.style.background = 'linear-gradient(135deg, rgba(93, 228, 199, 0.15), rgba(93, 228, 199, 0.08))'}
+                title="Export current dashboard as PDF report"
+              >
+                📊 Export PDF
+              </button>
+              <button
+                onClick={() => exportHistoryToCSV(historySnapshot, selectedCompany)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  background: 'linear-gradient(135deg, rgba(122, 168, 255, 0.15), rgba(122, 168, 255, 0.08))',
+                  border: '1px solid rgba(122, 168, 255, 0.3)',
+                  color: '#7aa8ff',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => e.target.style.background = 'linear-gradient(135deg, rgba(122, 168, 255, 0.25), rgba(122, 168, 255, 0.15))'}
+                onMouseOut={(e) => e.target.style.background = 'linear-gradient(135deg, rgba(122, 168, 255, 0.15), rgba(122, 168, 255, 0.08))'}
+                title="Download prediction history as CSV"
+              >
+                💾 Export CSV
+              </button>
+            </div>
+
             {/* KPI Cards Row */}
             <div className="kpi-grid">
               <KPICardEnhanced
@@ -294,6 +528,7 @@ export default function Dashboard() {
                 unit="%"
                 status={getRiskStatus(risk)}
                 change={fdiTrend || undefined}
+                tooltip="Probability of financial distress. Higher values indicate greater risk."
               />
               <KPICardEnhanced
                 title="AI Sentiment Score"
@@ -301,12 +536,14 @@ export default function Dashboard() {
                 unit="%"
                 change={sentimentTrend}
                 status={sentimentStatus}
+                tooltip="Aggregated sentiment from recent predictions. Reflects overall financial health."
               />
               <KPICardEnhanced
                 title="Model Confidence"
                 value={confidencePercent != null ? confidencePercent : '—'}
                 unit="%"
                 status={confidenceStatus}
+                tooltip="How confident the AI model is in its prediction. Higher is better."
               />
               <KPICardEnhanced
                 title="Market Volatility"
@@ -314,6 +551,7 @@ export default function Dashboard() {
                 unit="%"
                 change={volatilityTrend}
                 status={volatilityStatus}
+                tooltip="Measure of FDI fluctuations over recent predictions. Lower is more stable."
               />
             </div>
 
@@ -389,6 +627,35 @@ export default function Dashboard() {
                 >
                   {loading ? 'Refreshing...' : 'Refresh'}
                 </button>
+                <button
+                  onClick={async () => {
+                    // Use prefill data if available
+                    const dataToUse = Object.keys(prefill).length > 0 ? prefill : {};
+                    if (Object.keys(dataToUse).length === 0) {
+                      setToast({
+                        message: '⚠️ Please select a sample from "Prefill sample" dropdown below ⬇️',
+                        type: 'info'
+                      });
+                      return;
+                    }
+                    await fetchPrediction(dataToUse);
+                    setTimeout(() => fetchExplanation(), 800);
+                  }}
+                  disabled={loading || shapLoading}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: 6,
+                    cursor: 'pointer',
+                    background: 'linear-gradient(135deg, rgba(122, 168, 255, 0.15), rgba(122, 168, 255, 0.08))',
+                    border: '1px solid rgba(122, 168, 255, 0.3)',
+                    color: '#7aa8ff',
+                    fontSize: 12,
+                    fontWeight: 600
+                  }}
+                  title="Predict and explain with SHAP"
+                >
+                  {loading || shapLoading ? '\u23f3 Processing...' : '\ud83e\uddee Predict & Explain'}
+                </button>
               </div>
             </section>
 
@@ -402,6 +669,23 @@ export default function Dashboard() {
                 <RiskComparisonChart />
               </div>
             </div>
+
+            {/* Recent Activity Log */}
+            <RecentActivity limit={8} />
+            
+            {/* SHAP Feature Importance */}
+            <FeatureImportance 
+              featureData={shapData} 
+              onRefresh={fetchExplanation}
+              loading={shapLoading}
+            />
+            
+            {/* Live Financial Data */}
+            <LiveDataPanel 
+              selectedCompany={selectedCompany}
+              onDataFetched={handleLiveDataFetched}
+              onUseLiveData={handleUseLiveData}
+            />
           </section>
 
           <RightPanel selectedCompany={selectedCompany} />
@@ -412,6 +696,15 @@ export default function Dashboard() {
         <ModelInterpretation company={selectedCompany} fdi={fdi || 0.28} />
       </section>
       <Footer />
+      
+      {/* Toast Notifications */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }

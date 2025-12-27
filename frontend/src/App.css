@@ -1203,3 +1203,395 @@ h1, h2, h3, h4, h5, h6 {
     border-top: 1px solid rgba(255, 255, 255, 0.04);
   }
 }
+
+/* ==================== LOADING SPINNER ==================== */
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(93, 228, 199, 0.2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spinner 0.8s linear infinite;
+}
+
+@keyframes spinner {
+  to { transform: rotate(360deg); }
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(5, 9, 18, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.loading-overlay .loading-spinner {
+  width: 48px;
+  height: 48px;
+  border-width: 4px;
+}
+
+.loading-text {
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* ==================== SEARCH INPUT ==================== */
+.nav-search {
+  background: rgba(23, 33, 52, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  box-shadow: 0 8px 24px rgba(3, 7, 14, 0.55);
+  font-family: var(--font-body);
+}
+
+.nav-search::placeholder {
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+.nav-search:hover {
+  border-color: var(--accent);
+  background: rgba(93, 228, 199, 0.08);
+}
+
+.nav-search:focus {
+  outline: none;
+  border-color: var(--accent-secondary);
+  background: rgba(93, 228, 199, 0.12);
+  box-shadow: 0 0 0 3px rgba(93, 228, 199, 0.1);
+}
+
+/* ==================== TOOLTIP INFO ICON ==================== */
+.kpi-info-icon {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 14px;
+  color: var(--accent);
+  opacity: 0.6;
+  cursor: help;
+  transition: opacity 0.2s ease;
+  font-weight: 600;
+}
+
+.kpi-info-icon:hover {
+  opacity: 1;
+}
+
+/* ==================== ENHANCED RISK COLORS ==================== */
+.status-low-risk {
+  background: linear-gradient(135deg, rgba(93, 228, 199, 0.15), rgba(93, 228, 199, 0.08));
+  color: #5de4c7;
+  border: 1px solid rgba(93, 228, 199, 0.3);
+}
+
+.status-stable {
+  background: linear-gradient(135deg, rgba(93, 228, 199, 0.15), rgba(93, 228, 199, 0.08));
+  color: #5de4c7;
+  border: 1px solid rgba(93, 228, 199, 0.3);
+}
+
+.status-moderate-risk,
+.status-moderate {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(251, 191, 36, 0.08));
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.status-high-risk {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.08));
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* ==================== ACTIVITY LOG ==================== */
+.activity-log {
+  background: linear-gradient(150deg, rgba(12, 18, 33, 0.92), rgba(5, 8, 16, 0.92));
+  border: 1px solid var(--border);
+  padding: 20px;
+  border-radius: 18px;
+  margin-top: 16px;
+}
+
+.activity-log h4 {
+  margin: 0 0 14px 0;
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.activity-item {
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border-left: 3px solid var(--accent);
+  margin-bottom: 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.activity-item:hover {
+  background: rgba(93, 228, 199, 0.05);
+  border-left-color: var(--accent-secondary);
+}
+
+.activity-company {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.activity-time {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+/* ==================== FEATURE IMPORTANCE (SHAP) ==================== */
+.feature-importance-card {
+  background: linear-gradient(150deg, rgba(12, 18, 33, 0.92), rgba(5, 8, 16, 0.92));
+  border: 1px solid var(--border);
+  padding: 20px;
+  border-radius: 18px;
+  margin-top: 16px;
+}
+
+.feature-importance-card .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  gap: 16px;
+}
+
+.feature-importance-card .card-header h4 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.shap-summary {
+  display: flex;
+  gap: 24px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 10px;
+  margin: 16px 0;
+}
+
+.shap-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.shap-label {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.shap-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.shap-features {
+  margin-top: 16px;
+}
+
+.shap-feature-item {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  border-left: 3px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.shap-feature-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.shap-feature-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.shap-feature-name {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+  flex: 1;
+}
+
+.shap-feature-value {
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.shap-bar-container {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.shap-bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.shap-feature-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+}
+
+.shap-details {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.refresh-btn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: linear-gradient(135deg, rgba(93, 228, 199, 0.12), rgba(93, 228, 199, 0.08));
+  border: 1px solid rgba(93, 228, 199, 0.3);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.refresh-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(93, 228, 199, 0.2), rgba(93, 228, 199, 0.12));
+  border-color: var(--accent);
+}
+
+.refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ==================== LIVE DATA PANEL ==================== */
+.live-data-panel {
+  background: linear-gradient(150deg, rgba(12, 18, 33, 0.92), rgba(5, 8, 16, 0.92));
+  border: 1px solid var(--border);
+  padding: 20px;
+  border-radius: 18px;
+  margin-top: 16px;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.panel-header h4 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.live-data-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.data-section {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.section-title {
+  margin: 0 0 12px 0;
+  font-size: 12px;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(93, 228, 199, 0.2);
+  padding-bottom: 8px;
+}
+
+.data-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.data-row:last-child {
+  border-bottom: none;
+}
+
+.data-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.data-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.error-message {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(100px); }
+  to { opacity: 1; transform: translateX(0); }
+}

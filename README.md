@@ -10,6 +10,11 @@ A modern web application that predicts financial distress for companies using AI
 - 💼 Multi-company portfolio overview
 - 📉 Asset-to-liability ratio visualization
 - 🎨 Modern, professional UI with dark theme
+- 🔍 **SHAP Explainability** - See which features drive each prediction
+- 📡 **Live Data Integration** - Fetch real-time financial metrics from Yahoo Finance
+- 💾 **Export to PDF/CSV** - Download reports and history
+- 🔔 **Recent Activity Log** - Track latest predictions
+- 🔎 **Company Search** - Quick filter for company selection
 
 ## Tech Stack
 - **Frontend:** React, Chart.js
@@ -46,7 +51,7 @@ venv\Scripts\activate
 # source venv/bin/activate
 
 # Install dependencies
-pip install flask flask-cors numpy pandas scikit-learn xgboost
+pip install flask flask-cors numpy pandas scikit-learn xgboost shap yfinance
 
 # Run the backend server
 python app.py
@@ -97,11 +102,49 @@ FinSentinal_V3/
 
 ## Usage
 
-1. **Select a Company:** Use the dropdown in the top navigation
-2. **View Dashboard:** See KPIs, charts, and predictions
-3. **Make Predictions:** Click "Refresh" to get latest FDI
-4. **View History:** Check the Predictions tab for historical data
-5. **Monitor Performance:** View AI model metrics in the interpretation section
+### Quick Workflow
+
+**Option 1: Use Live Real-Time Data (Recommended)**
+1. Select a company from dropdown or search
+2. Scroll to "📡 Live Financial Data" section
+3. Click "🔄 Fetch Live Data" → Pulls real-time metrics from Yahoo Finance
+4. Click "✓ Use for Prediction" → Auto-fills data and makes prediction
+5. Click "↻ Explain" in Feature Importance section → See SHAP analysis
+
+**Option 2: Use Sample Data**
+1. Select a company
+2. Choose a sample from "Prefill sample" dropdown
+3. Click "🧮 Predict & Explain" → Gets prediction + SHAP in one click
+
+**Option 3: Manual Prediction**
+1. Click "Refresh" to get latest FDI
+2. Click "↻ Explain" to see feature importance
+
+### Key Features
+- **Live Data Integration:** Real-time financial metrics from Yahoo Finance
+- **SHAP Explainability:** Understand which features drive predictions
+- **Export Reports:** Download PDF reports or CSV history
+- **Recent Activity:** Track last 8 predictions with timestamps
+- **Company Search:** Quick filter in navigation bar
+
+## New Features
+
+### 🔍 SHAP Explainability
+- Click "Explain" button in Feature Importance section
+- See top 5 or all features that influenced the prediction
+- Red bars = increases risk, Blue bars = decreases risk
+- Understand exactly why the model made its prediction
+
+### 📡 Live Financial Data
+- Fetches real-time data from Yahoo Finance
+- Shows market data, valuation ratios, liquidity, profitability, and growth metrics
+- Color-coded values (green = good, yellow = moderate, red = poor)
+- Can be used to inform predictions
+
+### 💾 Export Capabilities
+- **PDF Export**: Professional report with company details, FDI, confidence, and risk assessment
+- **CSV Export**: Download full prediction history for analysis in Excel
+- Reports include executive summary and interpretation guide
 
 ## Data Information
 
@@ -136,6 +179,7 @@ python model_manager.py info
 
 ## API Endpoints
 
+### Core Endpoints
 - `GET /` - Health check
 - `POST /predict` - Get FDI prediction
 - `GET /history?limit=100` - Get prediction history
@@ -143,6 +187,16 @@ python model_manager.py info
 - `GET /samples?limit=20` - Get sample data
 - `GET /model-info` - Get model metadata
 - `POST /preprocess` - Preprocess sample data
+
+### New Advanced Endpoints
+- `POST /explain` - Get SHAP feature importance for a prediction
+  - Returns SHAP values showing which features increase/decrease risk
+  - Includes top 5 features and full feature list
+  
+- `POST /fetch-live-data` - Fetch real-time financial data from Yahoo Finance
+  - Requires: `{ "company": "Apple Inc." }` in request body
+  - Returns: Market data, ratios, profitability metrics, growth indicators
+  - Source: Yahoo Finance API via yfinance library
 
 ## Deployment Notes
 

@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function KPICardEnhanced({ title, value, unit = '', change = null, status = null, icon = null, color = '#4fd1c5' }) {
+export default function KPICardEnhanced({ title, value, unit = '', change = null, status = null, icon = null, color = '#4fd1c5', tooltip = '' }) {
   const getRiskColor = (s) => {
     if (!s) return '#4fd1c5';
     if (s === 'Low Risk' || s === 'Stable') return '#4fd1c5';
@@ -12,10 +12,13 @@ export default function KPICardEnhanced({ title, value, unit = '', change = null
   const barColor = getRiskColor(status);
 
   return (
-    <div className="kpi-card-enhanced">
+    <div className="kpi-card-enhanced" title={tooltip}>
       <div className="kpi-header">
         <div className="kpi-title-row">
-          <h4 className="kpi-title">{title}</h4>
+          <h4 className="kpi-title">
+            {title}
+            {tooltip && <span className="kpi-info-icon" title={tooltip}>ⓘ</span>}
+          </h4>
         </div>
         {status && <span className={`kpi-status status-${status.toLowerCase().replace(/\s+/g, '-')}`}>{status}</span>}
       </div>
