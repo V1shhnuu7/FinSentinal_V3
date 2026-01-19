@@ -1,237 +1,161 @@
-# FinSentinal V3 - Financial Distress Early Warning System
+# FinSentinal V3
 
-A modern web application that predicts financial distress for companies using AI and machine learning, with professional data visualization.
+Financial Distress Prediction System with AI-powered analysis, real-time data integration, and SHAP explainability.
 
 ## Features
-- 🎯 Financial Distress Index (FDI) prediction for major tech companies
-- 📊 Interactive dashboard with KPI cards and charts
-- 📈 Real-time prediction history and trend analysis
-- 🤖 AI model performance monitoring
-- 💼 Multi-company portfolio overview
-- 📉 Asset-to-liability ratio visualization
-- 🎨 Modern, professional UI with dark theme
-- 🔍 **SHAP Explainability** - See which features drive each prediction
-- 📡 **Live Data Integration** - Fetch real-time financial metrics from Yahoo Finance
-- 💾 **Export to PDF/CSV** - Download reports and history
-- 🔔 **Recent Activity Log** - Track latest predictions
-- 🔎 **Company Search** - Quick filter for company selection
+
+- 🎯 **Financial Distress Index (FDI)** - ML-based risk prediction
+- 📊 **Interactive Dashboard** - Real-time visualization of financial metrics
+- 🤖 **AI Model Interpretation** - SHAP explanations for predictions
+- 📈 **Live Data Integration** - yfinance API for real-time company data
+- 🏢 **Multi-Company Analysis** - Track Apple, Google, Amazon, Tesla, Netflix, Meta, NVIDIA
+- 💾 **Historical Tracking** - Trend analysis and prediction history
 
 ## Tech Stack
-- **Frontend:** React, Chart.js
-- **Backend:** Flask (Python)
-- **ML Model:** Random Forest / XGBoost
-- **Database:** SQLite
-- **Styling:** Custom CSS with professional fonts
 
-## Prerequisites
-- Python 3.8+
-- Node.js 14+
-- npm or yarn
+**Backend:**
+- Python 3.14.2
+- Flask (REST API)
+- scikit-learn (Random Forest)
+- XGBoost
+- SHAP (explainability)
+- yfinance (live data)
+- SQLite (predictions database)
 
-## Installation & Setup
+**Frontend:**
+- React 18
+- Chart.js (visualizations)
+- Modern CSS with gradients
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/V1shhnuu7/FinSentinal_V3.git
-cd FinSentinal_V3
-```
+## Installation
 
-### 2. Backend Setup
+### Backend Setup
 
 ```bash
-# Navigate to backend folder
 cd backend
+python -m venv ../.venv
+../.venv/Scripts/activate  # Windows
+# source ../.venv/bin/activate  # Linux/Mac
 
-# Create virtual environment (Windows)
-python -m venv venv
-venv\Scripts\activate
-
-# Or on Mac/Linux
-# python3 -m venv venv
-# source venv/bin/activate
-
-# Install dependencies
-pip install flask flask-cors numpy pandas scikit-learn xgboost shap yfinance
-
-# Run the backend server
-python app.py
+pip install flask flask-cors scikit-learn xgboost shap pandas numpy yfinance
 ```
 
-Backend will run on `http://localhost:5000`
-
-### 3. Frontend Setup
-
-Open a new terminal:
+### Frontend Setup
 
 ```bash
-# Navigate to frontend folder
 cd frontend
-
-# Install dependencies
 npm install
-
-# Start the development server
-npm start
 ```
 
-Frontend will open on `http://localhost:3000`
+## Running the Application
+
+### Start Backend
+```bash
+cd backend
+python app.py
+# Runs on http://localhost:5000
+```
+
+### Start Frontend
+```bash
+cd frontend
+npm start
+# Runs on http://localhost:3000
+```
 
 ## Project Structure
+
 ```
-FinSentinal_V3/
+FinSential_V3/
 ├── backend/
-│   ├── app.py                 # Flask API
-│   ├── model_manager.py       # Model training & versioning
+│   ├── app.py                      # Flask API
+│   ├── model_manager.py            # Model loading
+│   ├── create_demo_samples.py      # Demo data generator
 │   ├── data/
-│   │   ├── FINSENTINAL_FINAL.csv
-│   │   └── predictions.db
+│   │   ├── FINSENTINAL_FINAL.csv   # Training data
+│   │   └── predictions.db          # SQLite database
 │   └── models/
-│       ├── rf_model.pkl
-│       ├── scaler.pkl
-│       └── feature_cols.pkl
+│       ├── rf_model.pkl            # Random Forest model
+│       ├── scaler.pkl              # StandardScaler
+│       └── feature_cols.pkl        # Feature columns
 ├── frontend/
 │   ├── src/
-│   │   ├── App.js
-│   │   ├── App.css
-│   │   ├── components/       # React components
-│   │   └── pages/            # Dashboard, Companies, etc.
-│   ├── public/
-│   └── package.json
-└── README.md
-```
-
-## Usage
-
-### Quick Workflow
-
-**Option 1: Use Live Real-Time Data (Recommended)**
-1. Select a company from dropdown or search
-2. Scroll to "📡 Live Financial Data" section
-3. Click "🔄 Fetch Live Data" → Pulls real-time metrics from Yahoo Finance
-4. Click "✓ Use for Prediction" → Auto-fills data and makes prediction
-5. Click "↻ Explain" in Feature Importance section → See SHAP analysis
-
-**Option 2: Use Sample Data**
-1. Select a company
-2. Choose a sample from "Prefill sample" dropdown
-3. Click "🧮 Predict & Explain" → Gets prediction + SHAP in one click
-
-**Option 3: Manual Prediction**
-1. Click "Refresh" to get latest FDI
-2. Click "↻ Explain" to see feature importance
-
-### Key Features
-- **Live Data Integration:** Real-time financial metrics from Yahoo Finance
-- **SHAP Explainability:** Understand which features drive predictions
-- **Export Reports:** Download PDF reports or CSV history
-- **Recent Activity:** Track last 8 predictions with timestamps
-- **Company Search:** Quick filter in navigation bar
-
-## New Features
-
-### 🔍 SHAP Explainability
-- Click "Explain" button in Feature Importance section
-- See top 5 or all features that influenced the prediction
-- Red bars = increases risk, Blue bars = decreases risk
-- Understand exactly why the model made its prediction
-
-### 📡 Live Financial Data
-- Fetches real-time data from Yahoo Finance
-- Shows market data, valuation ratios, liquidity, profitability, and growth metrics
-- Color-coded values (green = good, yellow = moderate, red = poor)
-- Can be used to inform predictions
-
-### 💾 Export Capabilities
-- **PDF Export**: Professional report with company details, FDI, confidence, and risk assessment
-- **CSV Export**: Download full prediction history for analysis in Excel
-- Reports include executive summary and interpretation guide
-
-## Data Information
-
-### Static/Demo Data Used:
-- Asset-to-liability ratios for donut chart
-- Default model metrics (if metadata file is missing)
-- Sample company financial data in CSV
-
-### Dynamic Data:
-- FDI predictions from ML model
-- Prediction history from database
-- KPI metrics calculated from recent predictions
-- Sentiment and volatility scores from history
-
-## Model Management
-
-### Retrain Model
-```bash
-cd backend
-python model_manager.py retrain
-```
-
-### List Model Versions
-```bash
-python model_manager.py list
-```
-
-### View Current Model Info
-```bash
-python model_manager.py info
+│   │   ├── components/             # React components
+│   │   ├── pages/                  # Dashboard, Companies, etc.
+│   │   └── utils/                  # Export utilities
+│   └── public/
+└── data/                           # ARFF datasets
 ```
 
 ## API Endpoints
 
-### Core Endpoints
-- `GET /` - Health check
 - `POST /predict` - Get FDI prediction
-- `GET /history?limit=100` - Get prediction history
-- `GET /features` - Get model feature list
-- `GET /samples?limit=20` - Get sample data
-- `GET /model-info` - Get model metadata
-- `POST /preprocess` - Preprocess sample data
+- `POST /explain` - Get SHAP explanation
+- `GET /history` - Prediction history
+- `GET /samples` - Demo samples
+- `POST /fetch-live-data` - Fetch live company data
 
-### New Advanced Endpoints
-- `POST /explain` - Get SHAP feature importance for a prediction
-  - Returns SHAP values showing which features increase/decrease risk
-  - Includes top 5 features and full feature list
-  
-- `POST /fetch-live-data` - Fetch real-time financial data from Yahoo Finance
-  - Requires: `{ "company": "Apple Inc." }` in request body
-  - Returns: Market data, ratios, profitability metrics, growth indicators
-  - Source: Yahoo Finance API via yfinance library
+## Model Features (14 total)
 
-## Deployment Notes
+1. ROA (Return on Assets)
+2. Debt Ratio %
+3. Net Worth/Assets
+4. Current Ratio
+5. Operating Gross Margin
+6. Realized Sales Gross Margin
+7. Cash Flow Rate
+8. Operating Expense Rate
+9. Interest-bearing Debt Interest Rate
+10. Current Liability to Assets
+11. Retained Earnings to Total Assets
+12. Total Debt/Total Net Worth
+13. Working Capital to Total Assets
+14. Current Liability to Current Assets
 
-- Backend runs on Flask development server (use Gunicorn for production)
-- Frontend builds with `npm run build` for production
-- Database is SQLite (consider PostgreSQL for production)
-- Model files (.pkl) are included in the repo
+## Risk Thresholds
 
-## Known Limitations
+- **FDI < 40%** - Healthy (Low Risk)
+- **FDI 40-70%** - Moderate Risk
+- **FDI > 70%** - Distressed (High Risk)
 
-- Mobile responsiveness not fully implemented
-- Some charts use demo/static data for visualization
-- Limited to 8 predefined companies
+## Demo Companies
 
-## Troubleshooting
+| Company | Ticker | Typical FDI | Risk Level |
+|---------|--------|-------------|------------|
+| Apple Inc. | AAPL | 9% | Healthy |
+| Google (Alphabet) | GOOGL | 10% | Healthy |
+| NVIDIA Corp. | NVDA | 8% | Healthy |
+| Meta Platforms | META | 10% | Healthy |
+| Amazon.com Inc. | AMZN | 18% | Healthy |
+| Tesla Inc. | TSLA | 14% | Healthy |
+| Netflix Inc. | NFLX | 16% | Healthy |
 
-**Backend won't start:**
-- Make sure Python virtual environment is activated
-- Install all dependencies: `pip install flask flask-cors numpy pandas scikit-learn xgboost`
+## Usage
 
-**Frontend won't start:**
-- Delete `node_modules` and `package-lock.json`
-- Run `npm install` again
-- Make sure backend is running on port 5000
+1. **Select a Company** - Choose from dropdown
+2. **View Demo Data** - See historical predictions and trends
+3. **Use Live Data** - Click "Fetch Live Data" for real-time metrics
+4. **Get Explanation** - Click "Predict & Explain" for SHAP analysis
+5. **Export Reports** - Download PDF or CSV
 
-**Charts not showing:**
-- Check browser console for errors
-- Ensure backend is running and accessible
-- Clear browser cache and refresh
+## Training the Model
+
+If you need to retrain the model:
+
+```bash
+cd backend
+python create_demo_samples.py  # Generate demo data
+# Then train using your training notebook or script
+```
 
 ## Contributing
-Pull requests are welcome. For major changes, please open an issue first.
+
+This is an academic/research project. Feel free to fork and improve!
 
 ## License
-MIT
 
-## Contact
-For questions or support, please open an issue on GitHub.
+MIT License
+
+## Authors
+
+FinSentinal V3 Team

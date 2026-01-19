@@ -108,6 +108,15 @@ export default function Dashboard() {
       // Update prefill with the payload used
       setPrefill(payloadWithCompany);
       
+      // Refetch history to update charts with new prediction
+      const historyRes = await fetch('/history?limit=100');
+      if (historyRes.ok) {
+        const historyData = await historyRes.json();
+        if (historyData.history) {
+          setHistorySnapshot(historyData.history);
+        }
+      }
+      
     } catch (err) {
       setError(err.message || 'Failed to fetch');
       setToast({
@@ -662,7 +671,7 @@ export default function Dashboard() {
             {/* Bottom cards */}
             <div className="bottom-cards-grid">
               <div className="card-placeholder">
-                <AssetLiabilityChart selectedCompany={selectedCompany} />
+                <AssetLiabilityChart selectedCompany={selectedCompany} liveData={liveData} />
               </div>
 
               <div className="card-placeholder">

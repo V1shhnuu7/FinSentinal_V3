@@ -4,14 +4,37 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-export default function AssetLiabilityChart({ selectedCompany = 'Apple Inc.' }) {
+export default function AssetLiabilityChart({ selectedCompany = 'Apple Inc.', liveData = null }) {
   const [chartData, setChartData] = useState(null);
   const [ratio, setRatio] = useState('0.0');
   const [breakdown, setBreakdown] = useState({ assets: 0, liabilities: 0 });
+  const [isLive, setIsLive] = useState(false);
 
   useEffect(() => {
-    // Mock data for asset-to-liability ratio visualization
-    // In production, this would come from historical data/CSV
+    // Check if live data has assets/liabilities
+    if (liveData && liveData.total_assets && liveData.total_liabilities) {
+      const assets = liveData.total_assets;
+      const liabilities = liveData.total_liabilities;
+      const computedRatio = ((assets / (assets + liabilities)) * 100).toFixed(1);
+
+      setChartData({
+        labels: ['Assets', 'Liabilities'],
+        datasets: [
+          {
+            data: [assets, liabilities],
+            backgroundColor: ['#5de4c7', 'rgba(93, 228, 199, 0.3)'],
+            borderColor: ['#0f1419', '#0f1419'],
+            borderWidth: 2,
+          },
+        ],
+      });
+      setRatio(computedRatio);
+      setBreakdown({ assets, liabilities });
+      setIsLive(true);
+      return;
+    }
+
+    // Fallback to mock data for asset-to-liability ratio visualization
     const assetLiabilityData = {
       'Apple Inc.': { assets: 352755, liabilities: 120292 },
       'Microsoft Corp.': { assets: 411975, liabilities: 127510 },
@@ -39,7 +62,8 @@ export default function AssetLiabilityChart({ selectedCompany = 'Apple Inc.' }) 
     });
     setRatio(computedRatio);
     setBreakdown({ assets: data.assets, liabilities: data.liabilities });
-  }, [selectedCompany]);
+    setIsLive(false);
+  }, [selectedCompany, liveData]);
 
   const options = {
     responsive: true,
@@ -78,7 +102,19 @@ export default function AssetLiabilityChart({ selectedCompany = 'Apple Inc.' }) 
   return (
     <div className="donut-card">
       <div className="donut-card-header">
-        <h4>Asset-to-Liability Ratio</h4>
+        <h4>
+          Asset-to-Liability Ratio
+          {isLive && <span style={{
+            marginLeft: '8px',
+            padding: '2px 6px',
+            fontSize: '9px',
+            fontWeight: 600,
+            background: 'rgba(93, 228, 199, 0.2)',
+            border: '1px solid rgba(93, 228, 199, 0.4)',
+            borderRadius: '4px',
+            color: '#5de4c7'
+          }}>LIVE</span>}
+        </h4>
         <p>{selectedCompany}</p>
       </div>
       {chartData && (

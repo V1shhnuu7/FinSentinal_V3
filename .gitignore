@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 *.so
 .Python
+.venv/
 venv/
 env/
 ENV/
@@ -11,6 +12,7 @@ ENV/
 .pytest_cache/
 .coverage
 *.db
+*.sqlite
 
 # Node
 node_modules/
@@ -21,6 +23,7 @@ yarn-error.log*
 .pnp.js
 build/
 dist/
+frontend/build/
 
 # IDEs
 .vscode/
@@ -34,9 +37,13 @@ dist/
 Thumbs.db
 *.log
 
-# Models (optional - keep small models, exclude large ones)
-# backend/models/*.pkl
+# Test files
+test_*.py
+retrain_model.py
 
 # Environment
 .env
 .env.local
+
+# Jupyter checkpoints
+.ipynb_checkpoints/

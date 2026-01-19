@@ -36,39 +36,50 @@ export default function LiveDataPanel({ selectedCompany, onDataFetched, onUseLiv
   const mapLiveDataToFeatures = () => {
     if (!liveData || !onUseLiveData) return;
     
-    // Map live data to model feature names
-    // This is a basic mapping - adjust based on your actual feature names
+    // Map to the NEW model's 14 features (after retraining)
+    // Model expects specific financial ratios from training data
+    
+    // Convert API decimals to proper format
+    const roaPercent = (liveData.roa || 0.05) * 100; // API decimal to percentage
+    const debtRatio = (liveData.debt_to_equity || 0.5) * 100; // Convert to percentage
+    const operatingMargin = liveData.operating_margin || 0.15;
+    const profitMargin = liveData.profit_margin || 0.10;
+    
+    // Calculate derived metrics from balance sheet
+    const totalAssets = liveData.total_assets || 1000000000;
+    const totalLiabilities = liveData.total_liabilities || 500000000;
+    const currentLiabilities = totalLiabilities * 0.4; // Estimate
+    const retainedEarnings = (totalAssets - totalLiabilities) * 0.6; // Estimate
+    const workingCapital = (liveData.current_ratio || 1.5) * currentLiabilities - currentLiabilities;
+    
+    const netWorthToAssets = (totalAssets - totalLiabilities) / totalAssets;
+    const cashFlowRate = liveData.free_cash_flow && liveData.total_revenue && liveData.total_revenue > 0
+      ? liveData.free_cash_flow / liveData.total_revenue
+      : 0.10;
+    
     const features = {
-      // Ratios
-      'current_ratio': liveData.current_ratio || 0,
-      'quick_ratio': liveData.quick_ratio || 0,
-      'debt_to_equity': liveData.debt_to_equity || 0,
-      'pe_ratio': liveData.pe_ratio || 0,
-      'pb_ratio': liveData.pb_ratio || 0,
+      // NEW model's 14 features (exact names with spaces)
+      ' ROA(A) before interest and % after tax': roaPercent,
+      ' Debt ratio %': debtRatio,
+      ' Net worth/Assets': netWorthToAssets,
+      ' Current Ratio': liveData.current_ratio || 1.5,
+      ' Operating Gross Margin': operatingMargin,
+      ' Realized Sales Gross Margin': profitMargin,
+      ' Cash flow rate': cashFlowRate,
+      ' Operating Expense Rate': 1 - operatingMargin, // Inverse of margin
+      ' Interest-bearing debt interest rate': 0.05, // Default 5%
+      ' Current Liability to Assets': currentLiabilities / totalAssets,
+      ' Retained Earnings to Total Assets': retainedEarnings / totalAssets,
+      ' Total debt/Total net worth': totalLiabilities / (totalAssets - totalLiabilities),
+      ' Working Capital to Total Assets': workingCapital / totalAssets,
+      ' Current Liability to Current Assets': currentLiabilities / (currentLiabilities * (liveData.current_ratio || 1.5)),
       
-      // Profitability
-      'profit_margin': liveData.profit_margin || 0,
-      'operating_margin': liveData.operating_margin || 0,
-      'roe': liveData.roe || 0,
-      'roa': liveData.roa || 0,
-      
-      // Growth
-      'revenue_growth': liveData.revenue_growth || 0,
-      'earnings_growth': liveData.earnings_growth || 0,
-      
-      // Size indicators
-      'market_cap': liveData.market_cap || 0,
-      'total_revenue': liveData.total_revenue || 0,
-      'total_debt': liveData.total_debt || 0,
-      'total_cash': liveData.total_cash || 0,
-      'ebitda': liveData.ebitda || 0,
-      'free_cash_flow': liveData.free_cash_flow || 0,
-      
-      // Market metrics
-      'beta': liveData.beta || 1.0,
-      'current_price': liveData.current_price || 0,
+      // Metadata
+      'ticker': liveData.ticker,
+      'company': liveData.company,
     };
     
+    console.log('Live data mapped to NEW 14 features:', features);
     onUseLiveData(features);
   };
 

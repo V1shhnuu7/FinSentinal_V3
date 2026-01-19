@@ -42,7 +42,7 @@ export default function MainChart({ selectedCompany }) {
       mountedRef.current = false;
       clearInterval(id);
     };
-  }, []);
+  }, [selectedCompany]); // Added selectedCompany dependency to refetch when company changes
 
   // Filter by selected company if provided
   const filtered = selectedCompany

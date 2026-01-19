@@ -145,11 +145,23 @@ def predict():
         X = np.array(features).reshape(1, -1)
         X_scaled = scaler.transform(X)
 
-        # We treat the predicted probability as FINANCIAL DISTRESS likelihood (higher = more risk)
-        prob = model.predict_proba(X_scaled)[0][1]
-        if prob >= 0.7:
+        # Get prediction probabilities [prob_low_risk, prob_high_risk]
+        probs = model.predict_proba(X_scaled)[0]
+        prob_low_risk = probs[0]
+        prob_high_risk = probs[1]
+        
+        # FDI is the probability of high risk (class 1)
+        fdi_score = float(prob_high_risk)
+        
+        # Model confidence is how certain the model is (max probability)
+        # High confidence means model is very sure (close to 0 or 1)
+        # Low confidence means uncertain (close to 0.5)
+        model_confidence = float(max(prob_low_risk, prob_high_risk))
+        
+        # Risk label based on FDI
+        if fdi_score >= 0.7:
             risk_label = "Distressed"
-        elif prob >= 0.4:
+        elif fdi_score >= 0.4:
             risk_label = "Moderate"
         else:
             risk_label = "Healthy"
@@ -159,7 +171,7 @@ def predict():
             conn = sqlite3.connect(DB_PATH)
             cur = conn.cursor()
             cur.execute('INSERT INTO predictions (ts, fdi, risk, confidence, payload) VALUES (?,?,?,?,?)', (
-                datetime.utcnow().isoformat(), float(prob), risk_label, float(prob), json.dumps(data)
+                datetime.utcnow().isoformat(), fdi_score, risk_label, model_confidence, json.dumps(data)
             ))
             conn.commit()
         except Exception:
@@ -171,8 +183,9 @@ def predict():
                 pass
 
         return jsonify({
-            "fdi": float(prob),
-            "risk": risk_label
+            "fdi": fdi_score,
+            "risk": risk_label,
+            "confidence": model_confidence
         })
 
     except Exception as e:
@@ -459,6 +472,8 @@ def fetch_live_data():
             'total_cash': info.get('totalCash', 0),
             'total_debt': info.get('totalDebt', 0),
             'total_revenue': info.get('totalRevenue', 0),
+            'total_assets': info.get('totalAssets', 0),
+            'total_liabilities': info.get('totalLiab', 0) or info.get('totalLiabilities', 0),
             'ebitda': info.get('ebitda', 0),
             'free_cash_flow': info.get('freeCashflow', 0),
             'beta': info.get('beta', 1.0),
